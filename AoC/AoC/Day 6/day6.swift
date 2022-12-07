@@ -104,8 +104,8 @@ public struct day6 {
 
     // this approach should work, but because I can't actually inspect the indicies, it's being a bitch to debug.
     private func parseInput2(_ text: String) {
-        var startIndex = text.startIndex
-        var endIndex = text.index(startIndex, offsetBy: 14, limitedBy: text.endIndex)
+        let startIndex = text.startIndex
+        let endIndex = text.index(startIndex, offsetBy: 14, limitedBy: text.endIndex)
         guard endIndex != nil else { return } // no possible way to get a 14 letter code with less than 14 chars.
         var potentialStartPacket: String.SubSequence
 
