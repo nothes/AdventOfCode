@@ -43,7 +43,6 @@ class DiskObj {
         }
     }
 
-
     func smallDirs() -> [DiskObj] {
         var smallFiles = Array(containedObjects.filter { (_, value) in
             return value.size <= 100000 && value.dir == true
@@ -57,19 +56,14 @@ class DiskObj {
     }
 
     func sizeOfSmallDirs() -> Int {
-        var sizeTotal = 0
-        for file in self.smallDirs() {
-            sizeTotal += file.size
-        }
-
-        return sizeTotal
+         return self.smallDirs().reduce(into: 0) { partialResult, obj in partialResult += obj.size }
     }
 
     func dirsBiggerThan(_ targetSize: Int) -> [DiskObj] {
         var bigEnoughDirs = Array(containedObjects.filter { (_, obj) in obj.dir == true }.filter { (_, obj) in obj.size >= targetSize }.values)
 
-        for file in self.containedObjects {
-            bigEnoughDirs.append(contentsOf: file.1.dirsBiggerThan(targetSize))
+        for (_, file) in self.containedObjects {
+            bigEnoughDirs.append(contentsOf: file.dirsBiggerThan(targetSize))
         }
 
         return bigEnoughDirs
@@ -159,4 +153,3 @@ func findSmallestDirToDelete() {
 
     print("delete the dir with size \(root.smallestDirLargerThan(spaceStillNeeded))")
 }
-
