@@ -60,7 +60,6 @@ struct Coord {
         case .right:
             return Coord(x: x + 1, y: y)
         }
-
     }
 }
 
