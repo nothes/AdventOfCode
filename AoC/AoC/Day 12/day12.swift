@@ -13,7 +13,8 @@ func day12() {
         let text = try String(contentsOfFile: path, encoding: .utf8)
         parseInput(text)
         // do something interesting
-        calculateRoutes()
+        //calculateRoutes()
+        calculateLaziestRoutes()
     } catch {
         print(error.localizedDescription)
     }
@@ -27,6 +28,7 @@ func day12() {
 var map: Dictionary<Coord, Int> = Dictionary() // coords go positive to the right and down, int is the altitude. start is 0
 var startPoint: Coord = Coord(x: 0, y: 0)
 var endPoint: Coord = Coord(x: 0, y: 0)
+var lowestPoints: [Coord] = []
 
 fileprivate func parseInput(_ text: String) {
     var x = 0
@@ -41,12 +43,16 @@ fileprivate func parseInput(_ text: String) {
                 if altChar.isLowercase {
                     altitude = Int(altChar.asciiValue!) // a = 97
                     altitude -= 96 // align so that a = 1
+                    if altChar == "a" {
+                        lowestPoints.append(Coord(x: x, y: y))
+                    }
                 } else if altChar == "S" {
-                    altitude = Int(("a".first?.asciiValue)!) - 1
+                    altitude = Int(("a".first?.asciiValue)!)
                     altitude -= 96 // align so that a = 1
                     startPoint = Coord(x: x, y: y)
+                    lowestPoints.append(startPoint)
                 } else if altChar == "E" {
-                    altitude = Int(("z".first?.asciiValue)!) + 1
+                    altitude = Int(("z".first?.asciiValue)!)
                     altitude -= 96 // align so that a = 1
                     endPoint = Coord(x: x, y: y)
                 }
@@ -93,10 +99,19 @@ var visitedCoords: Set<Coord> = Set()
 
 func calculateRoutes() {
     visitedCoords.insert(rootNode.coord)
-    solveRoute(from: rootNode.coord)
+    solveRoute(from: [rootNode.coord])
 }
 
-func solveRoute(from currentCoord: Coord) {
+func calculateLaziestRoutes() {
+    visitedCoords = Set(lowestPoints)
+    for point in lowestPoints {
+        let newNode = TreeNode(coord: point, parentNode: nil, children: [], depth: 0)
+        leaves.append(newNode)
+    }
+    solveRoute(from: lowestPoints)
+}
+
+func solveRoute(from currentLeaves: [Coord]) {
     print("solving")
     var localLeaves = Array(leaves)
 
