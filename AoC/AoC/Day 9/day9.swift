@@ -40,7 +40,7 @@ fileprivate func parseInput(_ text: String) {
     }
 }
 
-struct Coord {
+struct Coord: Hashable {
     var x: Int
     var y: Int
 
@@ -61,16 +61,9 @@ struct Coord {
             return Coord(x: x + 1, y: y)
         }
     }
-}
 
-extension Coord: Hashable {
-    static func == (lhs: Coord, rhs: Coord) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(x)
-        hasher.combine(y)
+    var description: String {
+        return "(\(x), \(y))"
     }
 }
 

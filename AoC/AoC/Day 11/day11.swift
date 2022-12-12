@@ -70,7 +70,7 @@ struct BigStressItem {
     }
 
     static func +(oldLeft: BigStressItem, right: Int) -> BigStressItem {
-        var left = oldLeft.rebalance()
+        let left = oldLeft.rebalance()
 
         if right.isMultiple(of: left.multiplicationFactor) {
             return BigStressItem(number: left.number + right/left.multiplicationFactor, multiplicationFactor: left.multiplicationFactor, remainder: left.remainder)
@@ -81,7 +81,7 @@ struct BigStressItem {
 
     static func +(oldLeft: BigStressItem, oldRight: BigStressItem) -> BigStressItem {
         var right = oldRight.rebalance()
-        var left = oldLeft.rebalance()
+        let left = oldLeft.rebalance()
 
         // need to find a new multiplication factor.
         let newFactor = gcd(right.multiplicationFactor, left.multiplicationFactor)
