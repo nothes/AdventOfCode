@@ -20,11 +20,6 @@ func day12() {
     }
 }
 
-//struct Coord {
-//    var x: Int
-//    var y: Int
-//}
-
 var map: Dictionary<Coord, Int> = Dictionary() // coords go positive to the right and down, int is the altitude. start is 0
 var startPoint: Coord = Coord(x: 0, y: 0)
 var endPoint: Coord = Coord(x: 0, y: 0)
