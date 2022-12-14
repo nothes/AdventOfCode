@@ -40,7 +40,7 @@ fileprivate func parseInput(_ text: String) {
     }
 }
 
-struct Coord: Hashable {
+struct Coord: Hashable, CustomStringConvertible {
     var x: Int
     var y: Int
 
