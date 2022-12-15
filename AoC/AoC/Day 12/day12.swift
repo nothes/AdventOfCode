@@ -20,7 +20,7 @@ func day12() {
     }
 }
 
-var map: Dictionary<Coord, Int> = Dictionary() // coords go positive to the right and down, int is the altitude. start is 0
+fileprivate var map: Dictionary<Coord, Int> = Dictionary() // coords go positive to the right and down, int is the altitude. start is 0
 var startPoint: Coord = Coord(x: 0, y: 0)
 var endPoint: Coord = Coord(x: 0, y: 0)
 var lowestPoints: [Coord] = []

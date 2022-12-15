@@ -19,7 +19,7 @@ func day15() {
     }
 }
 
-var caves: CaveSystem?
+fileprivate var map: Map?
 
 fileprivate func parseInput(_ text: String) {
     var minX: Int = 0
@@ -76,10 +76,10 @@ fileprivate func parseInput(_ text: String) {
         }
     })
 
-    var map = Map(minX: minX, maxX: maxX, minY: minY, maxY: maxY)
-    caves = CaveSystem(map: map)
+    map = Map(minX: minX, maxX: maxX, minY: minY, maxY: maxY)
+    guard let map = map else { print("our map didn't init right.");return }
     for (beacon, sensor) in data {
-        caves?.read(beacon: beacon, sensor: sensor)
+        map.read(beacon: beacon, sensor: sensor)
     }
 }
 
@@ -90,10 +90,14 @@ enum ScanResult {
     case unknown
 }
 
+struct Sensor {
+    var location: Coord
+    var distance: Int
+    var beacon: Coord
+}
+
 class Map {
-    var map: [[ScanResult]]
-    var xAdjustment: Int = 0
-    var yAdjustment: Int = 0
+    var sensors: [Sensor]
     let minX: Int
     let minY: Int
     let maxX: Int
@@ -104,85 +108,35 @@ class Map {
         self.maxX = maxX
         self.minY = minY
         self.maxY = maxY
-        let mapRow = Array(repeating: ScanResult.unknown, count: maxX - minX + 1) // because 0 indexing is hiiilarious.
-        self.map = Array(repeating: mapRow, count: maxY - minY + 1)
-
-        self.xAdjustment = 0 - minX
-        self.yAdjustment = 0 - minY
-    }
-
-    func result(at coord: Coord) -> ScanResult {
-        return map[coord.x + xAdjustment][coord.y + yAdjustment]
-    }
-
-    func setResult(at coord: Coord, to result: ScanResult) {
-        map[coord.x + xAdjustment][coord.y + yAdjustment] = result
-    }
-}
-
-class CaveSystem {
-    var beacons: Set<Coord>
-    var map: Map
-
-    init(map: Map) {
-        self.beacons = Set()
-        self.map = map
+        self.sensors = []
     }
 
     func read(beacon: Coord, sensor: Coord) {
+        guard let map = map else { print("missing our map!"); return }
         print("beacon: \(beacon), sensor: \(sensor)")
         let distance = abs(beacon.x - sensor.x) + abs(beacon.y - sensor.y)
-        beacons.insert(beacon)
-        map.setResult(at: beacon, to: .beacon)
-        map.setResult(at: sensor, to: .sensor)
-        print("distance = \(distance)")
-        assert(distance >= 1) // positive and the sensor isn't on the beacon.
-        //let diameter = (distance * 2) + 1
-        // a diamond around the sensor for <distance> coords is empty of beacons.
-        //          *
-        //         ***      // distance of 3
-        //        *****     // diameter of 7
-        //       ***S***
-        //        *****
-        //         ***
-        //          *
-        //
-        // from minX -> maxX
-        // from minY -v maxY
-        // build it by rows, increasing
-        let yRange = sensor.y - distance ... sensor.y + distance
-        let rowWidth = (distance * 2) + 1
-        for y in yRange {
-            if y < sensor.y { // top of diamond
-                let remainingDist = distance - abs(sensor.y - y)
-                let xRange = sensor.x - remainingDist ... sensor.x + remainingDist
-                for x in xRange {
-                    let currentCoord = Coord(x: x, y: y)
-                  //  print("setting \(currentCoord) to empty")
-                    if map.result(at: currentCoord) == .unknown { // don't overwrite a beacon or sensor
-                        map.setResult(at: currentCoord, to: .empty)
-                    }
-                }
-            } else if y == sensor.y { // center row
-                for x in sensor.x - distance ... sensor.x + distance {
-                    let currentCoord = Coord(x: x, y: y)
-                  //  print("setting \(currentCoord) to empty")
-                    if map.result(at: currentCoord) == .unknown { // don't overwrite a beacon or sensor
-                        map.setResult(at: currentCoord, to: .empty)
-                    }
-                }
-            } else if y > sensor.y { //bottom of diamond
-                let remainingDist = distance - abs(sensor.y - y)
-                let xRange = sensor.x - remainingDist ... sensor.x + remainingDist
-                for x in xRange {
-                    let currentCoord = Coord(x: x, y: y)
-                    print("setting \(currentCoord) to empty")
-                    if map.result(at: currentCoord) == .unknown { // don't overwrite a beacon or sensor
-                        map.setResult(at: currentCoord, to: .empty)
-                    }
-                }
+        let sensor = Sensor(location: sensor, distance: distance, beacon: beacon)
+        map.sensors.append(sensor)
+    }
+
+    func result(at coord: Coord) -> ScanResult {
+        for sensor in sensors {
+            if sensor.location == coord {
+//                print("\(coord) has a sensor")
+                return .sensor
+            }
+            if sensor.beacon == coord {
+//                print("\(coord) has a beacon")
+                return .beacon
+            }
+            let sensingDistance = sensor.distance
+            let currentDistance = abs(sensor.location.x - coord.x) + abs(sensor.location.y - coord.y)
+//            print("\(coord) is \(currentDistance) from \(sensor.location) power: \(sensingDistance)")
+            if currentDistance <= sensingDistance { //
+                return .empty
             }
         }
+        return .unknown
     }
 }
 
@@ -191,15 +145,27 @@ let checkY = 2000000
 
 func checkTheResult() {
     var clearedCount = 0
-    guard let caves = caves else { print("the world doesn't exist"); return }
-    let map = caves.map
-    //var resultDrawing = ""
+  //  var drawingString = ""
+    guard let map = map else { print("the world doesn't exist"); return }
     for x in map.minX ... map.maxX {
         let result = map.result(at: Coord(x: x, y: checkY))
+//        switch result {
+//        case .sensor:
+//            drawingString.append("S")
+//        case .beacon:
+//            drawingString.append("B")
+//        case .empty:
+//            drawingString.append("#")
+//        case .unknown:
+//            drawingString.append(".")
+//        }
+
         if result == .empty {
             clearedCount += 1
         }
     }
+ //   print(drawingString)
+    // ..####B######################..
     print("map[\(checkY)] has \(clearedCount) cleared spaces")
 }
 
