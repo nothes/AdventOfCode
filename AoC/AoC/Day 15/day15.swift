@@ -13,7 +13,8 @@ func day15() {
         let text = try String(contentsOfFile: path, encoding: .utf8)
         parseInput(text)
         // do something interesting
-        checkTheResult()
+//        checkTheResult()
+        checkTheResult2()
     } catch {
         print(error.localizedDescription)
     }
@@ -113,7 +114,7 @@ class Map {
 
     func read(beacon: Coord, sensor: Coord) {
         guard let map = map else { print("missing our map!"); return }
-        print("beacon: \(beacon), sensor: \(sensor)")
+//        print("beacon: \(beacon), sensor: \(sensor)")
         let distance = abs(beacon.x - sensor.x) + abs(beacon.y - sensor.y)
         let sensor = Sensor(location: sensor, distance: distance, beacon: beacon)
         map.sensors.append(sensor)
@@ -137,6 +138,168 @@ class Map {
             }
         }
         return .unknown
+    }
+
+    func findDistressBeacon(minPos: Int, maxPos: Int) {
+        var yRow: [[ClosedRange<Int>]] = Array(repeating: [minPos ... maxPos], count: maxPos - minPos + 1)
+        // for each sensor, remove any coords that it knows about.
+        for sensorInfo in sensors {
+            let distance = sensorInfo.distance
+            let sensor = sensorInfo.location
+
+            let yRange = max(minPos, sensor.y - distance) ... min(maxPos, sensor.y + distance)
+            for y in yRange {
+                if y < sensor.y { // top of diamond
+                    let remainingDist = distance - abs(sensor.y - y)
+                    let xRange = sensor.x - remainingDist ... sensor.x + remainingDist
+                    var newRanges: [ClosedRange<Int>] = []
+                    for range in yRow[y] { // unknown areas
+                        if xRange.overlaps(range) { // we can mark more areas known!
+        //                  range:   |-----|
+        //     possible xRange results:
+        //                           |-----|            -- equal
+        //                        |------|              -- sticks off to left
+        //                              |------|        -- sticks off to right
+        //                             |--|             -- contained within
+        //                        |-------------|       -- contains
+                            if range == xRange {
+                                // junk the mofo, by not adding it to our new range array
+                            }
+                            if xRange.lowerBound <= range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    // junk it
+                                } else if xRange.upperBound < range.upperBound {
+                                    let newRange = max(xRange.upperBound + 1, minPos) ... min(range.upperBound, maxPos)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    //junk it
+                                }
+                            } else if xRange.lowerBound > range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(xRange.lowerBound - 1, maxPos)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound < range.upperBound {
+                                    // create 2 new ranges
+                                    var newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                    newRange = max(minPos, xRange.upperBound + 1) ... min(maxPos, range.upperBound)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                }
+                            }
+                        } else {
+                            newRanges.append(range)
+                        }
+                        yRow[y] = newRanges
+                    }
+                } else if y == sensor.y { // center row
+                                          //  print("setting \(currentCoord) to empty")
+                    var newRanges: [ClosedRange<Int>] = []
+                    for range in yRow[y] {
+                        let xRange = sensor.x - distance ... sensor.x + distance
+                        if xRange.overlaps(range) { // we can mark more areas known!
+                                                    //                  range:   |-----|
+                                                    //     possible xRange results:
+                                                    //                           |-----|            -- equal
+                                                    //                        |------|              -- sticks off to left
+                                                    //                              |------|        -- sticks off to right
+                                                    //                             |--|             -- contained within
+                                                    //                        |-------------|       -- contains
+                            if range == xRange {
+                                // junk the mofo, by not adding it to our new range array
+                            }
+                            if xRange.lowerBound <= range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    // junk it
+                                } else if xRange.upperBound < range.upperBound {
+                                    let newRange = max(minPos, xRange.upperBound + 1) ... min(maxPos, range.upperBound)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    //junk it
+                                }
+                            } else if xRange.lowerBound > range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound < range.upperBound {
+                                    // create 2 new ranges
+                                    var newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                    newRange = max(minPos, xRange.upperBound + 1) ... min(maxPos, range.upperBound)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                }
+                            }
+                        } else {
+                            newRanges.append(range)
+                        }
+                        yRow[y] = newRanges
+                    }
+
+                } else if y > sensor.y { //bottom of diamond
+                    let remainingDist = distance - abs(sensor.y - y)
+                    let xRange = sensor.x - remainingDist ... sensor.x + remainingDist
+                    var newRanges: [ClosedRange<Int>] = []
+                    for range in yRow[y] { // unknown areas
+                        if xRange.overlaps(range) { // we can mark more areas known!
+                                                    //                  range:   |-----|
+                                                    //     possible xRange results:
+                                                    //                           |-----|            -- equal
+                                                    //                        |------|              -- sticks off to left
+                                                    //                              |------|        -- sticks off to right
+                                                    //                             |--|             -- contained within
+                                                    //                        |-------------|       -- contains
+                            if range == xRange {
+                                // junk the mofo, by not adding it to our new range array
+                            }
+                            if xRange.lowerBound <= range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    // junk it
+                                } else if xRange.upperBound < range.upperBound {
+                                    let newRange = max(minPos, xRange.upperBound + 1) ... min(maxPos, range.upperBound)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    //junk it
+                                }
+                            } else if xRange.lowerBound > range.lowerBound {
+                                if xRange.upperBound == range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound < range.upperBound {
+                                    // create 2 new ranges
+                                    var newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                    newRange = max(minPos, xRange.upperBound + 1) ... min(maxPos, range.upperBound)
+                                    newRanges.append(newRange)
+                                } else if xRange.upperBound > range.upperBound {
+                                    let newRange = max(minPos, range.lowerBound) ... min(maxPos, xRange.lowerBound - 1)
+                                    newRanges.append(newRange)
+                                }
+                            }
+                        } else {
+                            newRanges.append(range)
+                        }
+                        yRow[y] = newRanges
+                    }
+                }
+            }
+        }
+        let finalY = yRow.firstIndex { range in
+            range.isEmpty == false
+        }
+        guard let finalY = finalY else {print(" no y coords found"); return }
+        print("finalY = \(finalY)")
+        let xRanges = yRow[finalY]
+
+        let finalX = xRanges.first?.lowerBound
+
+        guard let finalX = finalX else { print("no x coords found"); return }
+        print("final coord: (\(finalX), \(finalY)")
+        print("freq: \(Coord(x: finalX, y: finalY).tuningFrequency())")
     }
 }
 
@@ -169,3 +332,28 @@ func checkTheResult() {
     print("map[\(checkY)] has \(clearedCount) cleared spaces")
 }
 
+let beaconMin = 0//x and y coordinates each no lower than 0 and no larger than 4000000.
+let beaconMax = 4000000
+
+extension Coord {
+    func tuningFrequency() -> Int {
+        //To isolate the distress beacon's signal, you need to determine its tuning frequency, which can be found by multiplying its x coordinate by 4000000 and then adding its y coordinate.
+        return (x * 4000000) + y
+
+    }
+}
+
+func checkTheResult2() {
+    guard let map = map else { print("the world is corrupt!"); return }
+    map.findDistressBeacon(minPos: beaconMin, maxPos: beaconMax)
+
+    // brute force: bad idea.
+//    for x in beaconMin ... beaconMax {
+//        for y in beaconMin ... beaconMax {
+//            let checkCoord = Coord(x: x, y: y)
+//            if map.result(at: checkCoord) == .unknown {
+//                print("distress beacon at \(checkCoord), with freq: \(checkCoord.tuningFrequency())")
+//            }
+//        }
+//    }
+}
