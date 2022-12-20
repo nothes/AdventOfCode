@@ -38,12 +38,12 @@ fileprivate func parseInput(_ text: String) {
 class Data: Equatable, CustomStringConvertible {
     var value: Int
     var originalIndex: Int
-    var mixed: Bool
+    var mixed: Int
 
     init(value: Int, originalIndex: Int) {
         self.value = value
         self.originalIndex = originalIndex
-        self.mixed = false
+        self.mixed = 0
     }
 
     static func == (lhs: Data, rhs: Data) -> Bool {
@@ -61,61 +61,41 @@ func mixFile() {
     let dataCount = orderedData.count
     for index in 0 ..< dataCount {
         let mixValue = orderedData[index]
-        let moveTotal = mixValue.value % dataCount // some amount of loops and then this is the actual offset, since we don't now that our value won't be > than the count.
+       // let moveTotal = mixValue.value % dataCount // some amount of loops and then this is the actual offset, since we don't now that our value won't be > than the count.
         guard let currentIndex = mixableData.firstIndex(of: mixValue) else { return }
-        if moveTotal < 0 { //leftward moves
-            if abs(moveTotal) < currentIndex { // no loop. just shift it.
-                let targetIndex = currentIndex + moveTotal // it's already negative, this should be fine.
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            } else if abs(moveTotal) == currentIndex {
-                let targetIndex = 0
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            } else { // it's gonna loop around the back. careful...
-                let targetIndex = (dataCount - 1) + (moveTotal + currentIndex)
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            }
-        } else if moveTotal == 0 { // no move. this happens for our zero value,at least, but also anythung that is exactly a multiple of count.
-            mixValue.mixed = true
-        } else { // rightward move
-            if moveTotal < dataCount - 1 - currentIndex { // no loop, just move it
-                let targetIndex = currentIndex + moveTotal
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            } else if moveTotal == dataCount - currentIndex {
-                let targetIndex = 0
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            } else {
-                let targetIndex = moveTotal - ((dataCount - 1) - currentIndex)
-                move(data: mixValue, from: currentIndex, to: targetIndex)
-            }
+        var targetIndex = (currentIndex + mixValue.value) % dataCount
+        if targetIndex < 0 {
+            targetIndex = dataCount - 1 + targetIndex
         }
+        move(data: mixValue, from: currentIndex, to: targetIndex)
     }
 }
 
 func move(data: Data, from oldIndex: Int, to newIndex: Int) {
-  //  print("list before: \(mixableData)")
+//    print("list before: \(mixableData)")
     assert(newIndex >= 0)
+    assert(newIndex < mixableData.count)
     mixableData.remove(at: oldIndex)
     mixableData.insert(data, at: newIndex)
-    data.mixed = true
- //   print("list after: \(mixableData)")
+    data.mixed += 1
+//    print("list after: \(mixableData)")
 }
 
 func calculateCoords() {
   //  Then, the grove coordinates can be found by looking at the 1000th, 2000th, and 3000th numbers after the value 0, wrapping around the list as necessary. In the above example, the 1000th number after 0 is 4, the 2000th is -3, and the 3000th is 2; adding these together produces 3.
     let dataCount = mixableData.count
- //   assert(dataCount == 5000)
-    let mixedValues = mixableData.reduce(0) { partialResult, data in
-        partialResult + (data.mixed ? 1 : 0)
+
+    for value in mixableData {
+        assert(value.mixed == 1)
     }
-    assert(mixedValues == dataCount)
 
     guard let zeroIndex = mixableData.firstIndex (where: { data in
         data.value == 0
     }) else { return }
     print("zeroIndex: \(zeroIndex)")
-    var oneThouIndex = (1000 + zeroIndex) % dataCount
-    var twoThouIndex = (2000 + zeroIndex) % dataCount
-    var threeThouIndex = (3000 + zeroIndex) % dataCount
+    let oneThouIndex = (1000 + zeroIndex) % dataCount
+    let twoThouIndex = (2000 + zeroIndex) % dataCount
+    let threeThouIndex = (3000 + zeroIndex) % dataCount
 
     print("index1 = \(oneThouIndex) = \(mixableData[oneThouIndex].value)")
     print("index2 = \(twoThouIndex) = \(mixableData[twoThouIndex].value)")
@@ -128,4 +108,5 @@ func calculateCoords() {
 // part 1: 2607 - too low missed "after the value 0"
 // part 1: -13097 -- shouldn't have tried, it's negative!
 // part 1: 9604 too low
-// pt 1: 15072 incorredt. (tried offsetting all my indexes by -1)
+// part 1: 15072 incorrect. (tried offsetting all my indexes by -1)
+// part 1: -11200 - new simplified algorithm, still comes up wrong, but hope springs eternal.
