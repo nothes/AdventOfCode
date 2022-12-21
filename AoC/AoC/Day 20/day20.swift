@@ -61,11 +61,10 @@ func mixFile() {
     let dataCount = orderedData.count
     for index in 0 ..< dataCount {
         let mixValue = orderedData[index]
-       // let moveTotal = mixValue.value % dataCount // some amount of loops and then this is the actual offset, since we don't now that our value won't be > than the count.
         guard let currentIndex = mixableData.firstIndex(of: mixValue) else { return }
         var targetIndex = (currentIndex + mixValue.value) % dataCount
         if targetIndex < 0 {
-            targetIndex = dataCount - 1 + targetIndex
+            targetIndex = dataCount + targetIndex
         }
         move(data: mixValue, from: currentIndex, to: targetIndex)
     }
