@@ -13,14 +13,15 @@ func day20() {
         let text = try String(contentsOfFile: path, encoding: .utf8)
         parseInput(text)
         // do something interesting
-        mixFile()
-        calculateCoords()
+        solveThePuzzle()
     } catch {
         print(error.localizedDescription)
     }
 }
 
 var mixableData: [Data] = []
+var orderData: [Data] = []
+let DECRYPT_KEY = 811589153
 
 fileprivate func parseInput(_ text: String) {
     var count = 0
@@ -32,7 +33,26 @@ fileprivate func parseInput(_ text: String) {
         }
     })
 
+    orderData = Array(mixableData)
     print("data count = \(mixableData.count)")
+}
+
+let part2 = true
+
+func solveThePuzzle() {
+    if !part2 {
+        mixFile()
+        calculateCoords()
+    } else {
+        for value in mixableData {
+            value.value = value.value * DECRYPT_KEY
+        }
+
+        for _ in 1...10 {
+            mixFile()
+        }
+        calculateCoords()
+    }
 }
 
 class Data: Equatable, CustomStringConvertible {
@@ -57,10 +77,9 @@ class Data: Equatable, CustomStringConvertible {
 }
 
 func mixFile() {
-    let orderedData = Array(mixableData)
-    let dataCount = orderedData.count
-    for index in 0 ..< dataCount {
-        let mixValue = orderedData[index]
+    let dataCount = orderData.count - 1
+    for index in 0 ... dataCount {
+        let mixValue = orderData[index]
         guard let currentIndex = mixableData.firstIndex(of: mixValue) else { return }
         var targetIndex = (currentIndex + mixValue.value) % dataCount
         if targetIndex < 0 {
@@ -85,7 +104,7 @@ func calculateCoords() {
     let dataCount = mixableData.count
 
     for value in mixableData {
-        assert(value.mixed == 1)
+        assert(value.mixed == 10)
     }
 
     guard let zeroIndex = mixableData.firstIndex (where: { data in
