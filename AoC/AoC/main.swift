@@ -7,4 +7,4 @@
 
 import Foundation
 
-day18()
+day21()
