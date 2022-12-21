@@ -141,63 +141,23 @@ enum Movement {
 func simulateFallingRocks() {
     var rockCounter = 0
     let rockOrder = Rock.rockOrder()
-    let rockOptCount = rockOrder.count
     func nextRock() -> Rock {
         let nextRock = rockOrder[rockCounter]
         rockCounter += 1
-        if rockCounter == rockOptCount {
+        if rockCounter == rockOrder.count {
             rockCounter = 0
         }
         return nextRock
     }
 
-    var localWind = Array(wind)
+    var windCounter = 0
     func nextWind() -> Movement {
-        let nextWind = localWind.removeFirst()
-        if localWind.isEmpty {
-            print("restarting wind cycle")
-            localWind = Array(wind)
-            snapshot()
+        let nextWind = wind[windCounter]
+        windCounter += 1
+        if windCounter == wind.count {
+            windCounter = 0
         }
         return nextWind
-    }
-
-    struct State: Equatable {
-      //  var rockPile: Set<Coord>
-        var topRowTopology: [Int]
-        var nextRockPosition: Int
-        var currentHeightOffset: Int
-
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            return lhs.topRowTopology == rhs.topRowTopology && lhs.nextRockPosition == rhs.nextRockPosition
-        }
-    }
-    var stateCollection: [State] = []
-    var cycleDetected = false
-    func snapshot() {
-       // let cycleHeightOffset = purgeUnusedData()
-        var cycleHeightOffset = 0
-        if !stateCollection.isEmpty {
-            cycleHeightOffset = highestOccupiedY - stateCollection.last!.currentHeightOffset
-        }
-        // save state
-        // need
-        // * current top of rock pile
-        // * rock count object
-        // * current height offset
-        let lowestHighestY = highestYPoints.sorted().first ?? 0
-        let topology = highestYPoints.map { height in
-            return height - lowestHighestY
-        }
-
-        let currentState = State(topRowTopology: topology, nextRockPosition: rockCounter, currentHeightOffset: lowestHighestY)
-        if stateCollection.contains(currentState) {
-            stateCollection.append(currentState)
-            cycleDetected = true
-        } else {
-            stateCollection.append(currentState)
-            print("State: \(topology), offset: \(cycleHeightOffset)")
-        }
     }
 
     func attemptMove(rock: Rock, position: Coord, direction: Movement) -> Coord { // returns new position of the rock after the movement
@@ -222,9 +182,6 @@ func simulateFallingRocks() {
                 return position
             }
             motionCoord = Coord(x: 0, y: -1)
-            if position.y > highestOccupiedY+1 { // if there's nothing this tall, don't think about it, just go down.
-                return position.offset(by: motionCoord)
-            }
         }
 
         let potentialOccupiedCoords = Coord.offset(coords: Coord.offset(coords: rock.occupiedCoords(), by: motionCoord), by: position)
@@ -234,16 +191,31 @@ func simulateFallingRocks() {
             return position
         }
     }
-    //   | 0,4 1,4 2,4 3,4 4,4 5,4 6,4 |
-    //   | 0,3 1,3 2,3 3,3 4,3 5,3 6,3 |
-    //   | 0,2 1,2 2,2 3,2 4,2 5,2 6,2 |
-    //   | 0,1 1,1 2,1 3,1 4,1 5,1 6,1 |
-    //   | 0,0 1,0 2,0 3,0 4,0 5,0 6,0 |
-    //     --  --  --  --  --  --   --    // floor is -1
+//   | 0,4 1,4 2,4 3,4 4,4 5,4 6,4 |
+//   | 0,3 1,3 2,3 3,3 4,3 5,3 6,3 |
+//   | 0,2 1,2 2,2 3,2 4,2 5,2 6,2 |
+//   | 0,1 1,1 2,1 3,1 4,1 5,1 6,1 |
+//   | 0,0 1,0 2,0 3,0 4,0 5,0 6,0 |
+//     --  --  --  --  --  --   --    // floor is -1
 
     // (0,0) is the lower left corner. X -> right Y -^ upwards.
-
-    func dropARock() {
+    var occupiedSpace: Set<Coord> = Set() // floor spaces 0,0 = 6,0 are empty to start
+    var highestOccupiedY = -1 // the floor.
+    var highestYPoints: [Int] = Array(repeating: -1, count: 7)
+    // drop a rock.
+    for time in 1...ROCKS_DROPPED {
+        if time % 10 == 0 {
+            //print ("rock \(time)")
+            // purge anything below the top point in each column
+            // clean up my used set
+            let lowestHighestY = highestYPoints.sorted()[0]
+            occupiedSpace = occupiedSpace.filter { coord in
+                coord.y >= lowestHighestY
+            }
+            if time % 10000 == 0 {
+                print("rock number \(time)")
+            }
+        }
         let incomingRock = nextRock()
         var rockPos = Coord(x:2, y: highestOccupiedY + 4) // position of block's lower-left edge of the grid
 //        print("new rock \(incomingRock) at position: \(rockPos)")
@@ -266,7 +238,7 @@ func simulateFallingRocks() {
             let newRockPos = attemptMove(rock: incomingRock, position: rockPos, direction: .down)
             if newRockPos == rockPos { // we cannot fall any farther
                 rockHasLanded = true
-//                print("rock \"\(incomingRock)\" landed at position: \(rockPos)")
+//                print("landed at position: \(rockPos)")
                 //update maxY's...
                 let finalPositions = Coord.offset(coords: incomingRock.occupiedCoords(), by: rockPos)
                 for x in rockPos.x ... rockPos.x + (incomingRock.width() - 1) {
@@ -289,57 +261,5 @@ func simulateFallingRocks() {
             }
         }
     }
-
-    var heightOffset = 0
-    func purgeUnusedData() -> Int {
-        // purge anything below the top point in each column
-        // clean up my used set
-        let lowestHighestY = highestYPoints.sorted()[0]
-        occupiedSpace = occupiedSpace.filter { coord in
-            coord.y >= lowestHighestY
-        }
-
-        heightOffset += lowestHighestY// if everything at lowestHighestY is at 0, we've removed lowestHighestY units of height, keep track of that...
-        occupiedSpace = Set(occupiedSpace.map({ coord in
-            return coord.offset(by: Coord(x: 0, y: -lowestHighestY))
-        }))
-        return lowestHighestY
-    }
-
-    var occupiedSpace: Set<Coord> = Set() // floor spaces 0,0 = 6,0 are empty to start
-    var highestOccupiedY = -1 // the floor.
-    var highestYPoints: [Int] = Array(repeating: -1, count: 7)
-
-    // ok, the idea here is that since the wind and the shapes are cyclical, there exists some cycle where we end up "back" at some start position. once we know that, we can skip re-running it a bajillion times, and just calculate the remainder.
-
-    while !cycleDetected {
-        // drop a rock.
-            dropARock()
-    }
-
-    // found a cycle!
-    let repeatState = stateCollection.removeLast()
-    guard let repeatIndex = stateCollection.firstIndex(of: repeatState) else { return }
-
-    let cycleLength = stateCollection.count - repeatIndex
-
-    var heightGainedPerCycle = 0
-    for index in repeatIndex..<stateCollection.count {
-        heightGainedPerCycle += stateCollection[index].currentHeightOffset
-    }
-
-    print("cycleLength = \(cycleLength) wind loops. every cycle gains \(heightGainedPerCycle)")
-
-    let cyclesToSimulate = Int(ROCKS_DROPPED / cycleLength)
-    let remainingRocksToDrop = ROCKS_DROPPED % cycleLength
-
-    for _ in 0 ..< remainingRocksToDrop {
-        dropARock()
-    }
-
-    highestOccupiedY = highestOccupiedY + (cyclesToSimulate * heightGainedPerCycle)
-
     print("highest point in the stack = \(highestOccupiedY + 1)") // since my coord are 0-based, gotta increase 1 to talk about height
-    // 1514285714288 //correct demo answer
-    // 21000000000032
 }
