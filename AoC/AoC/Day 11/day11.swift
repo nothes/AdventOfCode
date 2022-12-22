@@ -18,7 +18,7 @@ func day11() {
     }
 }
 
-class Monkey {
+fileprivate class Monkey {
     var monkeyID: Int
     var heldItems: [Int] = []
     var operation: (_ old: Int) -> Int = { old in print("no operation provided"); return 0 }
@@ -58,7 +58,7 @@ class Monkey {
     }
 }
 
-var monkeyCrew: [Monkey] = []
+fileprivate var monkeyCrew: [Monkey] = []
 var maxWorry: Int = 0
 
 fileprivate func parseInput(_ text: String) {

@@ -19,13 +19,13 @@ func day10() {
     }
 }
 
-enum Instruction: String {
+fileprivate enum Instruction: String {
     case noop = "noop" // 1 cycle
     case addx = "addx" // 2 cycles
 }
 
 struct Command {
-    let instruction: Instruction
+    fileprivate let instruction: Instruction
     let count: Int
 
     func perform(xRegister: inout Int) -> Int { // consumed cycles

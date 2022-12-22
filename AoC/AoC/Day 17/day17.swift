@@ -138,6 +138,26 @@ enum Movement {
     case down
 }
 
+struct CaveState: Equatable {
+    // 1. floor state
+    var highestYPoints: [Int] // offset by the height, so the lowest one should always be 0
+    // 2. which block is being dropped
+    var rockCounter: Int // position in the rock order we're on currently
+    var windCounter: Int // position in the wind order we're on currently.
+    // 3. it's position (it might not have landed yet)
+    var rockPosition: Coord
+    // 4. the height we've climbed so far (or during that rotation? I'm not sure yet.)
+    var offset: Int // how much we've adjusted the floor profile by
+    var totalHeight: Int
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.highestYPoints == rhs.highestYPoints &&
+        lhs.rockCounter == rhs.rockCounter &&
+        lhs.rockPosition == rhs.rockPosition
+        // possibly we care about the offset? I'm not sure.
+    }
+}
+
 func simulateFallingRocks() {
     var rockCounter = 0
     let rockOrder = Rock.rockOrder()
@@ -147,6 +167,7 @@ func simulateFallingRocks() {
         if rockCounter == rockOrder.count {
             rockCounter = 0
         }
+        saveState()
         return nextRock
     }
 
@@ -158,6 +179,11 @@ func simulateFallingRocks() {
             windCounter = 0
         }
         return nextWind
+    }
+
+    func saveState() {
+        // the idea is this combo of state should cycle, and then we can do a modulo calc to just stack the last 50 or whatever and add the height + the cycles's height * number of em.
+      //  let currentState = CaveState(highestYPoints: <#T##[Int]#>, rockCounter: <#T##Int#>, windCounter: <#T##Int#>, rockPosition: <#T##Coord#>, offset: <#T##Int#>, totalHeight: <#T##Int#>)
     }
 
     func attemptMove(rock: Rock, position: Coord, direction: Movement) -> Coord { // returns new position of the rock after the movement
@@ -202,23 +228,11 @@ func simulateFallingRocks() {
     var occupiedSpace: Set<Coord> = Set() // floor spaces 0,0 = 6,0 are empty to start
     var highestOccupiedY = -1 // the floor.
     var highestYPoints: [Int] = Array(repeating: -1, count: 7)
+
     // drop a rock.
-    for time in 1...ROCKS_DROPPED {
-        if time % 10 == 0 {
-            //print ("rock \(time)")
-            // purge anything below the top point in each column
-            // clean up my used set
-            let lowestHighestY = highestYPoints.sorted()[0]
-            occupiedSpace = occupiedSpace.filter { coord in
-                coord.y >= lowestHighestY
-            }
-            if time % 10000 == 0 {
-                print("rock number \(time)")
-            }
-        }
+    for _ in 1...ROCKS_DROPPED {
         let incomingRock = nextRock()
         var rockPos = Coord(x:2, y: highestOccupiedY + 4) // position of block's lower-left edge of the grid
-//        print("new rock \(incomingRock) at position: \(rockPos)")
         var rockHasLanded = false
         while !rockHasLanded {
             // 1. apply wind
@@ -226,11 +240,9 @@ func simulateFallingRocks() {
             case .left:
                 // attempt to move the block left.
                 rockPos = attemptMove(rock: incomingRock, position: rockPos, direction: .left)
-//                print("pushed left, new position: \(rockPos)")
             case .right:
                 // attempt to move right
                 rockPos = attemptMove(rock: incomingRock, position: rockPos, direction: .right)
-//                print("pushed right, new position: \(rockPos)")
             default:
                 assertionFailure("wind cannot blow downwards. stop it.")
             }
@@ -238,7 +250,6 @@ func simulateFallingRocks() {
             let newRockPos = attemptMove(rock: incomingRock, position: rockPos, direction: .down)
             if newRockPos == rockPos { // we cannot fall any farther
                 rockHasLanded = true
-//                print("landed at position: \(rockPos)")
                 //update maxY's...
                 let finalPositions = Coord.offset(coords: incomingRock.occupiedCoords(), by: rockPos)
                 for x in rockPos.x ... rockPos.x + (incomingRock.width() - 1) {
@@ -257,7 +268,6 @@ func simulateFallingRocks() {
 
             } else {
                 rockPos = newRockPos
-//                print("dropped down, new position: \(rockPos)")
             }
         }
     }
