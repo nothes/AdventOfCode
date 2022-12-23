@@ -43,28 +43,192 @@ enum NavInstruction {
     case turn(Turn) // rotate
 }
 
+//       AB                so, A Face is x 50...99, y 0...49
+//       C                     B Face is x 100...149, y 0...49
+//      DE                     C face is x 50...99, y 50...99
+//      F                      D face is x 0...49, y = 100...149
+//                             E face is x 50...99, y = 100...149
+//                             F face is x 0...49, y = 150...199
+
+enum Face {
+    case A
+    case B
+    case C
+    case D
+    case E
+    case F
+
+    static func face(at coord: Coord) -> Face {
+        switch (coord.x, coord.y) {
+        case (50...99, 0...49):
+            return .A
+        case (100...149, 0...49):
+            return .B
+        case (50...99, 50...99):
+            return .C
+        case (0...49, 100...149):
+            return .D
+        case (50...99, 100...149):
+            return .E
+        case (0...49, 150...199):
+            return .F
+        default:
+            assertionFailure("no idea what face we're on? \(self)")
+            return .A
+        }
+    }
+
+    func xRange() -> ClosedRange<Int> {
+        switch self {
+        case .A:
+            return 50...99
+        case .B:
+            return 100...149
+        case .C:
+            return 50...99
+        case .D:
+            return 0...49
+        case .E:
+            return 50...99
+        case .F:
+            return 0...49
+        }
+    }
+
+    func yRange() -> ClosedRange<Int> {
+        switch self {
+        case .A:
+            return 0...49
+        case .B:
+            return 0...49
+        case .C:
+            return 50...99
+        case .D:
+            return 100...149
+        case .E:
+            return 100...149
+        case .F:
+            return 150...199
+        }
+    }
+}
+fileprivate var part2 = true
 extension Coord {
+    func wrapCoord2(travelling direction: Facing) -> (Coord?, Facing) {// nil coord means cannot move there
+        var nextLocale = self
+        var nextFacing = direction
+        if part2 {
+            // step one: which face are we on?
+            let currentFace = Face.face(at: self)
+            // depending on which way we are moving, we need to update our facing, as well as our coordinate.
+            let xOffset = x - currentFace.xRange().lowerBound
+            let yOffset = y - currentFace.yRange().lowerBound
+            var nextFace: Face
+            switch(currentFace, direction) {
+            case (.A, .west): // WA -> WD flips 180
+                nextFace = .D
+                nextFacing = .east
+                nextLocale = Coord(x:nextFace.xRange().lowerBound, y: nextFace.yRange().upperBound - yOffset)
+            case (.A, .north):
+                // NA -> EE
+                nextFacing = .east
+                nextFace = .F
+                nextLocale = Coord(x: nextFace.xRange().lowerBound, y: nextFace.yRange().lowerBound + xOffset)
+            case (.B, .north):
+                // NB -> NF
+                nextFacing = .north
+                nextFace = .F
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + xOffset, y: nextFace.yRange().upperBound)
+            case (.B, .east):
+                // EB -> WE
+                nextFacing = .west
+                nextFace = .E
+                nextLocale = Coord(x: nextFace.xRange().upperBound , y: nextFace.yRange().upperBound - yOffset)
+            case (.B, .south):
+                // SB -> WC
+                nextFacing = .west
+                nextFace = .C
+                nextLocale = Coord(x: nextFace.xRange().upperBound, y: nextFace.yRange().lowerBound + xOffset)
+            case (.C, .west):
+                // WC -> SD
+                nextFace = .D
+                nextFacing = .south
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + yOffset, y: nextFace.yRange().lowerBound)
+            case (.C, .east):
+                // EC -> NB
+                nextFace = .B
+                nextFacing = .north
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + yOffset, y: nextFace.yRange().upperBound)
+            case (.D, .north):
+                // ND -> EC
+                nextFacing = .east
+                nextFace = .C
+                nextLocale = Coord(x: nextFace.xRange().lowerBound, y: nextFace.yRange().lowerBound + xOffset)
+            case (.D, .west):
+                // WD -> EA
+                nextFacing = .east
+                nextFace = .A
+                nextLocale = Coord(x: nextFace.xRange().lowerBound, y: nextFace.yRange().upperBound - yOffset)
+            case (.E, .east):
+                // EE -> WB
+                nextFacing = .west
+                nextFace = .B
+                nextLocale = Coord(x: nextFace.xRange().upperBound, y: nextFace.yRange().upperBound - yOffset)
+            case (.E, .south):
+                // SE -> WF
+                nextFacing = .west
+                nextFace = .F
+                nextLocale = Coord(x: nextFace.xRange().upperBound, y: nextFace.yRange().lowerBound + xOffset)
+            case (.F, .east):
+                // EF -> NE
+                nextFacing = .north
+                nextFace = .E
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + yOffset, y: nextFace.yRange().upperBound)
+            case (.F, .south):
+                // SF -> SB
+                nextFacing = .south
+                nextFace = .B
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + xOffset, y: nextFace.yRange().lowerBound)
+            case (.F, .west):
+                // WF -> SA
+                nextFacing = .south
+                nextFace = .A
+                nextLocale = Coord(x: nextFace.xRange().lowerBound + yOffset, y: nextFace.yRange().lowerBound)
+            default:
+                assertionFailure("we shouldn't be here wrapping around an edge that is already defined on our map. :(")
+            }
+        }
+
+        let nextSpace = gameBoard[nextLocale]
+        if nextSpace == .wall {
+            return (nil, direction)
+        }
+        assert(nextSpace == .floor)
+        return (nextLocale, nextFacing)
+
+    }
+
     func wrapCoord(travelling direction: Facing) -> Coord? {// nil means cannot move there
         var nextLocale = self
         switch direction {
         case .north: // moving negative in Y
-             nextLocale = Coord(x: x, y: largestY)
+            nextLocale = Coord(x: x, y: largestY)
             while gameBoard[nextLocale] == nil || gameBoard[nextLocale] == .void {
                 nextLocale =  Coord(x: x, y: nextLocale.y - 1)
             }
 
         case .east: // moving positive in X
-             nextLocale = Coord(x: 0, y: y)
+            nextLocale = Coord(x: 0, y: y)
             while gameBoard[nextLocale] == nil || gameBoard[nextLocale] == .void {
                 nextLocale =  Coord(x: nextLocale.x + 1, y: y)
             }
         case .south: // moving positive in Y
-             nextLocale = Coord(x: x, y: 0)
+            nextLocale = Coord(x: x, y: 0)
             while gameBoard[nextLocale] == nil || gameBoard[nextLocale] == .void {
                 nextLocale =  Coord(x: x, y: nextLocale.y + 1)
             }
         case .west: // moving negative in X
-             nextLocale = Coord(x: largestX, y: y)
+            nextLocale = Coord(x: largestX, y: y)
             while gameBoard[nextLocale] == nil || gameBoard[nextLocale] == .void {
                 nextLocale =  Coord(x: nextLocale.x - 1, y: y)
             }
@@ -159,23 +323,25 @@ func navigateBoard() {
             for _ in 1...distance {
                 switch facing {
                 case .north:
-                    print("moving negative in the y dimension")
                     nextMove = Coord(x: position.x, y: position.y - 1)
                 case .east:
-                    print("moving positive in the x dimension")
                     nextMove = Coord(x: position.x + 1, y: position.y)
                 case .south:
-                    print("moving positive in the y direction")
                     nextMove = Coord(x: position.x, y: position.y + 1)
                 case .west:
-                    print("moving negative in the x direction")
                     nextMove = Coord(x: position.x - 1, y: position.y)
                 }
 
                 var nextSpace = gameBoard[nextMove!]
                 if nextSpace == nil {
                     // the void!
-                    nextMove = nextMove?.wrapCoord(travelling: facing)
+                    if !part2 {
+                        nextMove = nextMove?.wrapCoord(travelling: facing)
+                    } else {
+                        let wrapResult = position.wrapCoord2(travelling: facing)
+                        nextMove = wrapResult.0
+                        facing = wrapResult.1
+                    }
                     if let nextMove { // fall through and move normally
                         nextSpace = gameBoard[nextMove]
                     } else {
@@ -188,7 +354,13 @@ func navigateBoard() {
                     continue
                 } else if nextSpace == .void {
                     // wrap around to the bottom.
-                    nextMove = nextMove?.wrapCoord(travelling: facing)
+                    if !part2 {
+                        nextMove = nextMove?.wrapCoord(travelling: facing)
+                    } else {
+                        let wrapResult = position.wrapCoord2(travelling: facing)
+                        nextMove = wrapResult.0
+                        facing = wrapResult.1
+                    }
                     if nextMove == nil {
                         continue
                     } else {
@@ -213,3 +385,6 @@ func navigateBoard() {
     let password = (1000 * finalRow) + (4 * finalColumn) + facing.rawValue
     print(password)
 }
+
+// part 2 185118 That's not the right answer; your answer is too high
+// part 2 34239 That's not the right answer; your answer is too low.

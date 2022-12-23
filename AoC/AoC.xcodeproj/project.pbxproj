@@ -68,7 +68,7 @@
 		50B31720294834D100B9A1CC /* day13.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day13.swift; sourceTree = "<group>"; };
 		50B31722294834D800B9A1CC /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; };
 		50BED4E529541F3500CB63E3 /* day22.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day22.swift; sourceTree = "<group>"; };
-		50BED4E729541F3A00CB63E3 /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; };
+		50BED4E729541F3A00CB63E3 /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; wrapsLines = 0; };
 		50F07E9729497CF400E6465A /* day14.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day14.swift; sourceTree = "<group>"; };
 		50F07E9929497CFA00E6465A /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; };
 		50FFEC902952CB8F0047E718 /* Day 20 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "Day 20"; path = "AoC/Day 20"; sourceTree = SOURCE_ROOT; };
