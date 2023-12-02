@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		50C6AC012B19887C005E90FD /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C6AC002B19887C005E90FD /* main.swift */; };
 		50C6AC082B1988F6005E90FD /* day1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C6AC072B1988F6005E90FD /* day1.swift */; };
+		50C6AC0D2B19A7BA005E90FD /* day2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C6AC0C2B19A7BA005E90FD /* day2.swift */; };
+		50C70ED82B1AF228007B8C9E /* day3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C70ED72B1AF228007B8C9E /* day3.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +30,9 @@
 		50C6AC002B19887C005E90FD /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		50C6AC072B1988F6005E90FD /* day1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day1.swift; sourceTree = "<group>"; };
 		50C6AC0A2B1989BC005E90FD /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; };
+		50C6AC0C2B19A7BA005E90FD /* day2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day2.swift; sourceTree = "<group>"; };
+		50C6AC0E2B19A7C6005E90FD /* input */ = {isa = PBXFileReference; lastKnownFileType = text; path = input; sourceTree = "<group>"; };
+		50C70ED72B1AF228007B8C9E /* day3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = day3.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +67,8 @@
 			children = (
 				50C6AC002B19887C005E90FD /* main.swift */,
 				50C6AC092B1988FE005E90FD /* Day1 */,
+				50C6AC0B2B19A7AA005E90FD /* Day2 */,
+				50C70ED62B1AF220007B8C9E /* Day 3 */,
 			);
 			path = AoC2023;
 			sourceTree = "<group>";
@@ -73,6 +80,23 @@
 				50C6AC0A2B1989BC005E90FD /* input */,
 			);
 			path = Day1;
+			sourceTree = "<group>";
+		};
+		50C6AC0B2B19A7AA005E90FD /* Day2 */ = {
+			isa = PBXGroup;
+			children = (
+				50C6AC0C2B19A7BA005E90FD /* day2.swift */,
+				50C6AC0E2B19A7C6005E90FD /* input */,
+			);
+			path = Day2;
+			sourceTree = "<group>";
+		};
+		50C70ED62B1AF220007B8C9E /* Day 3 */ = {
+			isa = PBXGroup;
+			children = (
+				50C70ED72B1AF228007B8C9E /* day3.swift */,
+			);
+			path = "Day 3";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -103,7 +127,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1410;
-				LastUpgradeCheck = 1410;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					50C6ABFC2B19887C005E90FD = {
 						CreatedOnToolsVersion = 14.1;
@@ -134,6 +158,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				50C6AC082B1988F6005E90FD /* day1.swift in Sources */,
+				50C6AC0D2B19A7BA005E90FD /* day2.swift in Sources */,
+				50C70ED82B1AF228007B8C9E /* day3.swift in Sources */,
 				50C6AC012B19887C005E90FD /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -174,9 +200,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -234,9 +262,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -258,8 +288,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = EWK7R2Q86X;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -269,8 +301,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = EWK7R2Q86X;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
