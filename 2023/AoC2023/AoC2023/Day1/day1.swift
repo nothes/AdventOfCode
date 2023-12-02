@@ -111,6 +111,6 @@ func findFirstDigit2(of line: String) -> Int {
 
     let resultInt = searchTerms[firstKey] ?? 0 //assume no failure to find.
     let resultInt2 = searchTerms[lastKey] ?? resultInt
-    print(Int("\(resultInt)\(resultInt2)"))
+    print(Int("\(resultInt)\(resultInt2)")!)
     return Int("\(resultInt)\(resultInt2)") ?? 0
 }
