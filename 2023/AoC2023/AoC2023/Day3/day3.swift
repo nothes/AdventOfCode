@@ -8,7 +8,7 @@
 import Foundation
 
 func day3() {
-    let path = "/Users/rachael/Documents/AoC-remote/2023/AoC2023/AoC2023/Day 3/Input"
+    let path = "/Users/rachael/Documents/AoC-remote/2023/AoC2023/AoC2023/Day3/Input"
     do {
         let text = try String(contentsOfFile: path, encoding: .utf8)
 
