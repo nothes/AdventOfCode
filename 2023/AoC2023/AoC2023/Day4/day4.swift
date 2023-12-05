@@ -117,10 +117,14 @@ func totalCards() {
     for card in cards {
         let matches = card.matches()
         if let cardsToProcess = countedScratchCards[card] {
+//            print("processing card \(card.cardNumber) x \(cardsToProcess), \(matches) matches")
             for _ in 0..<cardsToProcess {
-                for newCard in (card.cardNumber + 1)...(card.cardNumber + matches) {
+                for newCard in (card.cardNumber)..<min((card.cardNumber + matches), cards.count) { // this only works because there's no skipped ID's. otherwise we'd have to be smarter.
                     if let currentCardCount = countedScratchCards[cards[newCard]] {
                         countedScratchCards[cards[newCard]] = currentCardCount + 1
+//                        print("adding to card \(cards[newCard].cardNumber) new count = \(currentCardCount + 1)")
+                    } else {
+                        assertionFailure()
                     }
                 }
             }
@@ -131,5 +135,6 @@ func totalCards() {
     for card in countedScratchCards.keys {
         cardTotal = cardTotal + (countedScratchCards[card] ?? 0)
     }
+    print(cardTotal)
 }
 
