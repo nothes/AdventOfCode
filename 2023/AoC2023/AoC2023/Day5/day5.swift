@@ -40,9 +40,14 @@ struct MaterialMap {
         let offset = value - source
         return destination + offset
     }
+
+    func sourceRange() -> Range<Int> {
+        return source..<source+length
+    }
 }
 
 struct Almanac {
+    // part 1
     let seeds: [Int]
     let seedToSoil: [MaterialMap]
     let soilToFert: [MaterialMap]
@@ -114,6 +119,85 @@ struct Almanac {
     }
 }
 
+struct Almanac2 {
+    // part 1
+    let seeds: [Range<Int>]
+    let seedToSoil: [MaterialMap]
+    let soilToFert: [MaterialMap]
+    let fertToWater: [MaterialMap]
+    let waterToLight: [MaterialMap]
+    let lightToTemp: [MaterialMap]
+    let tempToHumidity: [MaterialMap]
+    let humidityToLoc: [MaterialMap]
+
+    func location(for seed: Int) -> Int {
+        var soil = seed
+        for map in seedToSoil {
+            if let newSoil = map.destination(for: seed) {
+                soil = newSoil
+            }
+        }
+
+        var fert = soil
+        for map in soilToFert {
+            if let newFert = map.destination(for: soil) {
+                fert = newFert
+            }
+        }
+
+        var water = fert
+        for map in fertToWater {
+            if let newWater = map.destination(for: fert) {
+                water = newWater
+            }
+        }
+
+        var light = water
+        for map in waterToLight {
+            if let newLight = map.destination(for: water) {
+                light = newLight
+            }
+        }
+
+        var temp = light
+        for map in lightToTemp {
+            if let newTemp = map.destination(for: light) {
+                temp = newTemp
+            }
+        }
+
+        var humidity = temp
+        for map in tempToHumidity {
+            if let newHumidity = map.destination(for: temp) {
+                humidity = newHumidity
+            }
+        }
+
+        var loc = humidity
+        for map in humidityToLoc {
+            if let newLoc = map.destination(for: humidity) {
+                loc = newLoc
+            }
+        }
+        return loc
+    }
+
+    func lowestLocation() -> Int {
+        //ok, i have ranges of seeds, all in rows. for each range, see what range of the next products we have is?
+        let seedRanges = seeds
+        var relevantSoilRanges: [Range<Int>] = []
+        for map in seedToSoil {
+            for seedRange in seedRanges {
+         //       if map.sourceRange().contains(seedRange)
+
+            }
+
+        }
+        return -1
+    }
+}
+
+
 let mapHeader = Regex {
     OneOrMore(.word)
     "-"
@@ -125,6 +209,7 @@ let mapHeader = Regex {
 }
 
 var almanac: Almanac? = nil
+var almanac2: Almanac2? = nil
 
 func parseAlmanac(with input: String) {
     var readingMap = false
@@ -169,7 +254,7 @@ func parseAlmanac(with input: String) {
 func parseAlmanacPt2(with input: String) {
     var readingMap = false
     var readMaps: [[MaterialMap]] = []
-    var seeds: [Int] = []
+    var seeds: [Range<Int>] = []
     var currentMaps: [MaterialMap] = []
 
     input.enumerateLines { line, stop in
@@ -191,9 +276,7 @@ func parseAlmanacPt2(with input: String) {
                     }
 
                     if location != -1 && length != -1 {
-                        for seed in location..<location+length {
-                            seeds.append(seed)
-                        }
+                        seeds.append(location..<location+length)
                         location = -1
                         length = -1
                     }
@@ -222,7 +305,7 @@ func parseAlmanacPt2(with input: String) {
 
     assert(readMaps.count == 7)
 
-    almanac = Almanac(seeds: seeds, seedToSoil: readMaps[0], soilToFert: readMaps[1], fertToWater: readMaps[2], waterToLight: readMaps[3], lightToTemp: readMaps[4], tempToHumidity: readMaps[5], humidityToLoc: readMaps[6])
+    almanac2 = Almanac2(seeds: seeds, seedToSoil: readMaps[0], soilToFert: readMaps[1], fertToWater: readMaps[2], waterToLight: readMaps[3], lightToTemp: readMaps[4], tempToHumidity: readMaps[5], humidityToLoc: readMaps[6])
 }
 
 func findLowestLocation() {
