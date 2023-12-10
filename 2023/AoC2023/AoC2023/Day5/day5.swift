@@ -188,7 +188,9 @@ struct Almanac2 {
         var relevantSoilRanges: [Range<Int>] = []
         for map in seedToSoil {
             for seedRange in seedRanges {
-         //       if map.sourceRange().contains(seedRange)
+                if map.sourceRange().overlaps(seedRange) {
+                    
+                }
 
             }
 
