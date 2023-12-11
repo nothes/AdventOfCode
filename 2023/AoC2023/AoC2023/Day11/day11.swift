@@ -117,11 +117,12 @@ func reallyExpandSpace() {
             }
         }
 
-        if !hasGalaxy { // if there's no galaxy, do it twice!
+        if !hasGalaxy {
             emptyColumns.append(column)
         }
     }
 
+    // gotta write into a copy, because mutating the original means we can no longer refer to the rows to expand in their original positions.
     var destGalaxies = galaxies
     for row in emptyRows {
         for i in 0..<galaxies.count {
