@@ -95,7 +95,7 @@ func findGalaxies() {
 
 func reallyExpandSpace() {
     // this operates on the galaxies list, because otherwise, ugh.
-    let expansion = 1000000
+    let expansion = 1000000-1
     let spaceRows = space.count
     let spaceColumns = space[0].count
 
