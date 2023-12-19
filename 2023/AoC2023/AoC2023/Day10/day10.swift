@@ -129,7 +129,22 @@ func parseTubes(with input: String) {
     }
 }
 
-enum Direction {
+enum Direction: CustomDebugStringConvertible {
+    var debugDescription: String {
+        switch self {
+        case .up:
+            return "up"
+        case .down:
+            return "down"
+        case .left:
+            return "left"
+        case .right:
+            return "right"
+        case .wall:
+            return "wall"
+        }
+    }
+
     case up
     case down
     case left
