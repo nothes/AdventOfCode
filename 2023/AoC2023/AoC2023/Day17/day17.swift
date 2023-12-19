@@ -16,7 +16,7 @@ func day17() {
         // part 1
         findWarmestPath()
         // part 2
-        //bestBeamStartingCoord()
+
     } catch {
         print(error.localizedDescription)
     }
@@ -38,11 +38,10 @@ func parseNeighorhood(with input: String) {
 
 var results: [CurrentState] = []
 var leastMaxHeatLoss = 0
-var totalPathsRunning = 1
-let yMax = neighborhood.count - 1
-let xMax = neighborhood[0].count - 1
 
 func findWarmestPath() {
+    let yMax = neighborhood.count - 1
+    let xMax = neighborhood[0].count - 1
     // first lets get a path that is by doing 3 right, 3 down, till we get to the end.
     var testHeatLoss = 0
     var position: (x: Int, y: Int) = (0,0)
@@ -68,14 +67,15 @@ func findWarmestPath() {
             downMove = 0
         }
     }
+
     results.append(CurrentState(straightMoves: 0, enteredDir: .wall, heatLoss: testHeatLoss, position: (xMax, yMax), visitedSpaces: []))
     leastMaxHeatLoss = testHeatLoss
     print("first heat-loss value = \(leastMaxHeatLoss)")
 
     // basic recursive flood
+    // gotta do the first move ourselves to avoid losing heat to the first square.
     let startingState1 = CurrentState(straightMoves: 1, enteredDir: .right, heatLoss: 0, position: (1, 0), visitedSpaces: [])
     let startingState2 = CurrentState(straightMoves: 1, enteredDir: .down, heatLoss: 0, position: (1, 0), visitedSpaces: [])
-    // gotta do the first move ourselves to avoid losing heat to the first square.
     recursiveNavigation(startingState1)
     recursiveNavigation(startingState2)
 
@@ -83,25 +83,22 @@ func findWarmestPath() {
         return state1.heatLoss < state2.heatLoss
     }
     print(results.first!)
-    print(results.last!)
 }
 
 func recursiveNavigation(_ state: CurrentState) {
+    let yMax = neighborhood.count - 1
+    let xMax = neighborhood[0].count - 1
     let heatLoss = neighborhood[state.position.y][state.position.x]
     let totalHeatLoss = state.heatLoss + heatLoss
-   // let currPos = state.position
 
-  //  print("entering \(currPos) moving \(state.enteredDir), total paths = \(totalPathsRunning)")
-
-    if totalHeatLoss > leastMaxHeatLoss {
-        totalPathsRunning = totalPathsRunning - 1
+    if totalHeatLoss >= leastMaxHeatLoss {
         return //we've finished 1 path, and this one is worse than it.
     }
     // we're moving into the point in the state object
     if state.position == (xMax, yMax) {
         print("finished a path! heatLoss = \(totalHeatLoss)")
         //we've arrived, record our result, and exit.
-        results.append(CurrentState(straightMoves: 0, enteredDir: .wall, heatLoss: totalHeatLoss, position: state.position, visitedSpaces: []))
+        results.append(CurrentState(straightMoves: 0, enteredDir: .wall, heatLoss: totalHeatLoss, position: state.position, visitedSpaces: state.visitedSpaces))
         if leastMaxHeatLoss == 0 {
             leastMaxHeatLoss = totalHeatLoss
         } else {
@@ -109,7 +106,6 @@ func recursiveNavigation(_ state: CurrentState) {
                 leastMaxHeatLoss = totalHeatLoss
             }
         }
-        totalPathsRunning = totalPathsRunning - 1
 
         return
     }
@@ -134,22 +130,17 @@ func recursiveNavigation(_ state: CurrentState) {
     }
 
     if nextDirs.isEmpty {
-        totalPathsRunning = totalPathsRunning - 1
         return
     }
-    var visitedCoords: [(x: Int, y: Int, dir: Direction)] = state.visitedSpaces
-    visitedCoords.append((state.position.x, state.position.y, state.enteredDir))
+    var visitedCoords: [(x: Int, y: Int)] = state.visitedSpaces
+    visitedCoords.append((state.position.x, state.position.y))
 
-    if nextDirs.count > 1 {
-        totalPathsRunning = totalPathsRunning + nextDirs.count - 1
-    }
     for exitDir in nextDirs {
         let nextCoord = coord(from: state.position, in: exitDir)
-        if visitedCoords.contains(where: { (x: Int, y: Int, direction: Direction) in
-            return x == nextCoord.x && y == nextCoord.y && direction == exitDir
+        if visitedCoords.contains(where: { (x: Int, y: Int) in
+            return x == nextCoord.x && y == nextCoord.y
         }) {
             //we're in a loop, just stop.
-            totalPathsRunning = totalPathsRunning - 1
             return
         }
 
@@ -167,7 +158,7 @@ struct CurrentState: CustomDebugStringConvertible {
     let enteredDir: Direction
     let heatLoss: Int
     let position: (x: Int, y: Int)
-    let visitedSpaces: [(x: Int, y: Int, dir: Direction)]
+    let visitedSpaces: [(x: Int, y: Int)]
 
     var debugDescription: String {
         return "position: (\(position.x), \(position.y)), heatLoss: \(heatLoss)"
