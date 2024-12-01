@@ -185,7 +185,7 @@ struct Almanac2 {
     func lowestLocation() -> Int {
         //ok, i have ranges of seeds, all in rows. for each range, see what range of the next products we have is?
         let seedRanges = seeds
-        var relevantSoilRanges: [Range<Int>] = []
+        let relevantSoilRanges: [Range<Int>] = []
         for map in seedToSoil {
             for seedRange in seedRanges {
                 if map.sourceRange().overlaps(seedRange) {

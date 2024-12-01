@@ -40,6 +40,8 @@ var results: [CurrentState] = []
 var leastMaxHeatLoss = 0
 
 func findWarmestPath() {
+
+    // HINT FROM GREG: Dijkstra’s Algorithm!
     let yMax = neighborhood.count - 1
     let xMax = neighborhood[0].count - 1
     // first lets get a path that is by doing 3 right, 3 down, till we get to the end.
