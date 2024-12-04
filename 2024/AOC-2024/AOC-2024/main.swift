@@ -7,7 +7,7 @@
 
 import Foundation
 
-day1()
+day4()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -18,4 +18,15 @@ func readInput(forDay day: Int) -> String {
         print(error.localizedDescription)
     }
     return ""
+}
+
+enum Direction: CaseIterable {
+    case North
+    case NorthEast
+    case East
+    case SouthEast
+    case South
+    case SouthWest
+    case West
+    case NorthWest
 }

@@ -50,7 +50,7 @@ func day3() {
     print("valid multiplication commands total \(multTotal)")
 
     // part 2
-    var enabled = true
+  //  var enabled = true
     multTotal = 0
 
 
