@@ -7,7 +7,7 @@
 
 import Foundation
 
-day4()
+day5()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
