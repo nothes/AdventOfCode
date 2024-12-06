@@ -7,7 +7,7 @@
 
 import Foundation
 
-day5()
+day6()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -29,4 +29,57 @@ enum Direction: CaseIterable {
     case SouthWest
     case West
     case NorthWest
+
+    func turnLeft() -> Direction {
+        // assume a 90 degree turn
+        switch self {
+        case .North:
+            return .West
+        case .NorthEast:
+            return .NorthWest
+        case .East:
+            return .North
+        case .SouthEast:
+            return .NorthEast
+        case .South:
+            return .East
+        case .SouthWest:
+            return .SouthEast
+        case .West:
+            return .South
+        case .NorthWest:
+            return .SouthWest
+        }
+    }
+
+    func turnRight() -> Direction {
+        switch self {
+        case .North:
+            return .East
+        case .NorthEast:
+            return .SouthEast
+        case .East:
+            return .South
+        case .SouthEast:
+            return .SouthWest
+        case .South:
+            return .West
+        case .SouthWest:
+            return .NorthWest
+        case .West:
+            return .North
+        case .NorthWest:
+            return .NorthEast
+        }
+    }
+}
+
+struct Coord: Hashable {
+    let x: Int
+    let y: Int
+}
+
+struct Motion: Hashable {
+    let position: Coord
+    let facing: Direction
 }
