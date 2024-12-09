@@ -7,7 +7,7 @@
 
 import Foundation
 
-day7()
+day9()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -77,6 +77,14 @@ enum Direction: CaseIterable {
 struct Coord: Hashable {
     let x: Int
     let y: Int
+
+    func coordWith(xVal: Int) -> Coord {
+        return Coord(x: xVal, y: y)
+    }
+
+    func coordWith(yVal: Int) -> Coord {
+        return Coord(x: x, y: yVal)
+    }
 }
 
 struct Motion: Hashable {
