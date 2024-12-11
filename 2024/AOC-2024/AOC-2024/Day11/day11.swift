@@ -58,9 +58,6 @@ func day11() {
 //
     // part 2
 
-    var mutatingStones = [3277]
-    mutatingStones = blink(stones: mutatingStones)
-    print("test 1 blink \(mutatingStones)")
     struct Stone: Hashable {
         let value: Int
         let blinks: Int
@@ -75,7 +72,6 @@ func day11() {
         } else {
                 let blinksToGo = blinks - 1
                 if blinks == 0 {
-                //    print("stone \(stone) blinks \(blinksToGo) = 1")
                     resultCache[Stone(value: stone, blinks: blinksToGo)] = 1
                     return 1
                 }
@@ -105,7 +101,6 @@ func day11() {
                 }
             for stone in newStones {
                 let result = recursiveBlink(stone: stone, blinks: blinksToGo)
-             //   print("stone \(stone) blinks \(blinksToGo) = \(result)")
                 resultCache[Stone(value: stone, blinks: blinksToGo)] = result
                 total += result
             }
@@ -122,4 +117,3 @@ func day11() {
     print("after 75 blinks, count = \(count)") // 25 = 194557
     // count = 1219422435403264 is too high
 }
-
