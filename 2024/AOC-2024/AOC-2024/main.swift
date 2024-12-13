@@ -7,7 +7,7 @@
 
 import Foundation
 
-day11()
+day12()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -74,7 +74,11 @@ enum Direction: CaseIterable {
     }
 }
 
-struct Coord: Hashable {
+struct Coord: Hashable, CustomDebugStringConvertible {
+    var debugDescription: String {
+        "(\(x), \(y))"
+    }
+
     let x: Int
     let y: Int
 
