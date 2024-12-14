@@ -7,7 +7,7 @@
 
 import Foundation
 
-day12()
+day14()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -88,6 +88,23 @@ struct Coord: Hashable, CustomDebugStringConvertible {
 
     func coordWith(yVal: Int) -> Coord {
         return Coord(x: x, y: yVal)
+    }
+}
+
+struct FloatCoord: Hashable, CustomDebugStringConvertible {
+    var debugDescription: String {
+        "(\(x), \(y))"
+    }
+
+    let x: Float
+    let y: Float
+
+    func coordWith(xVal: Float) -> FloatCoord {
+        return FloatCoord(x: xVal, y: y)
+    }
+
+    func coordWith(yVal: Float) -> FloatCoord {
+        return FloatCoord(x: x, y: yVal)
     }
 }
 
