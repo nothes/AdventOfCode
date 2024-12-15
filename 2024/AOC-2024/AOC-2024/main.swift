@@ -7,7 +7,7 @@
 
 import Foundation
 
-day14()
+day15()
 
 func readInput(forDay day: Int) -> String {
     let path = "/Users/rachael/Documents/AoC-remote/2024/AOC-2024/AOC-2024/Day\(day)/input.txt"
@@ -111,4 +111,14 @@ struct FloatCoord: Hashable, CustomDebugStringConvertible {
 struct Motion: Hashable {
     let position: Coord
     let facing: Direction
+}
+
+func render2dArray(_ map: [[Any]]) {
+    for y in 0..<map.count {
+        var rowString = ""
+        for x in 0..<map[0].count {
+            rowString.append(String(describing: map[y][x]))
+        }
+        print(rowString)
+    }
 }
