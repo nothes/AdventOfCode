@@ -266,7 +266,7 @@ func day15() {
                 } else {
                     // check for boxes
                     let bigBoxCopy = bigBoxPositions
-                    var boxesAboveOrBelow = bigBoxCopy.filter { box in
+                    let boxesAboveOrBelow = bigBoxCopy.filter { box in
                         return checkCoords.contains(box.left)  || checkCoords.contains(box.right)
                     }
 
