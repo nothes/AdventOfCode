@@ -59,7 +59,7 @@ func day15() {
             case "@": // bot
                 botCoord = Coord(x: x, y: y)
             case "[": // box
-                bigBoxPositions.insert(Box(left: Coord(x: x, y: y), right: Coord(x: x, y: y+1)))
+                bigBoxPositions.insert(Box(left: Coord(x: x, y: y), right: Coord(x: x+1, y: y)))
             case "#": // wall
                 wallPositions.insert(Coord(x: x, y: y))
             default: // space or walls just Are
@@ -68,9 +68,8 @@ func day15() {
         }
     }
 
-    render2dArray(wideMap)
+//    render2dArray(wideMap)
     performOperationsPt2(dirs: directions)
-    render2dArray(wideMap)
     calculateGPS2()
 
     func performOperations(dirs: String) {
@@ -181,6 +180,7 @@ func day15() {
 
     func performOperationsPt2(dirs: String) {
         for char in dirs {
+            print("moving \(char)")
             switch char {
             case "^":
                 move2(dir: .North)
@@ -196,7 +196,7 @@ func day15() {
                 assertionFailure("what other direction can you go my dude?")
             }
             wideMap = updateMapWithResults(with: wideMap[0].count, yCount: wideMap.count)
-            render2dArray(wideMap)
+//            render2dArray(wideMap)
         }
     }
 
@@ -259,7 +259,6 @@ func day15() {
             checkCoords.insert(checkCoord) // which columns we're shifting upwards due to boxes
             var boxesMoved: Set<Box> = []
 
-
             while (0..<wideMap.count).contains(checkCoord.y) && (0..<wideMap[0].count).contains(checkCoord.x) {
                 if !wallPositions.intersection(checkCoords).isEmpty {
                     stuckAgainstWall = true
@@ -267,8 +266,8 @@ func day15() {
                 } else {
                     // check for boxes
                     let bigBoxCopy = bigBoxPositions
-                    let boxesAboveOrBelow = bigBoxCopy.filter { box in
-                        checkCoords.contains(box.left)  || checkCoords.contains(box.right)
+                    var boxesAboveOrBelow = bigBoxCopy.filter { box in
+                        return checkCoords.contains(box.left)  || checkCoords.contains(box.right)
                     }
 
                     if boxesAboveOrBelow.isEmpty {
@@ -279,7 +278,9 @@ func day15() {
                         // update checkcoords
                         var newCheckCoords: Set<Coord> = []
                         for coord in checkCoords {
-                            newCheckCoords.insert(coord.coordWith(yVal: coord.y + yDelta))
+                            if !(wideMap[coord.y][coord.x] == ".") {
+                                newCheckCoords.insert(coord.coordWith(yVal: coord.y + yDelta))
+                            }
                         }
                         checkCoords = newCheckCoords
                         // and add new ones for any new boxes we're pushing along.
@@ -290,7 +291,7 @@ func day15() {
                     }
                 }
                 checkCoord = checkCoord.coordWith(yVal: checkCoord.y+yDelta).coordWith(xVal: checkCoord.x+xDelta)
-                checkCoords.insert(checkCoord)
+               // checkCoords.insert(checkCoord)
             }
             if stuckAgainstWall {
                 return // nothing moves
@@ -303,7 +304,6 @@ func day15() {
             }
             // move the bot
             botCoord = botCoord.coordWith(yVal: botCoord.y+yDelta).coordWith(xVal: botCoord.x+xDelta)
-            print("moved bot to \(botCoord)")
         }
     }
 
@@ -334,6 +334,7 @@ func day15() {
             total += boxGPS
         }
         print("total GPS: \(total)")
+        // 1366988 is Too Low
     }
 
     func updateMapWithResults(with xCount: Int, yCount: Int) -> [[String]] {
