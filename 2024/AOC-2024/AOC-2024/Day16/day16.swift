@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import GameKit
 
 func day16() {
     let input = readInput(forDay: 16)
@@ -20,216 +21,149 @@ func day16() {
         map.append(row)
     }
 
-    render2dArray(map)
+ //   render2dArray(map)
 
-    var startPosition: Coord = Coord(x: -1, y: -1)
-    var endPosition: Coord = Coord(x: -1, y: -1)
-    let currPosition: Motion // coord & facing
+    var startPosition: MapNode? = nil
+    var endPosition: MapNode? = nil
 
-//    var walls: Set<Coord> = []
+    var walls: [GKGridGraphNode] = []
 //    var spaces: Set<Coord> = []
+    var graph: GKGridGraph = GKGridGraph(fromGridStartingAt: vector_int2(x: 0, y: 0), width: Int32(map[0].count), height: Int32(map.count), diagonalsAllowed: false, nodeClass: MapNode.self)
 
     for y in 0..<map.count {
         for x in 0..<map[0].count {
-            switch map[y][x] {
-            case "S":
-                startPosition = Coord(x: x, y: y)
-            //    spaces.insert(Coord(x: x, y: y))
-            case "E":
-                endPosition = Coord(x: x, y: y)
-             //   spaces.insert(Coord(x: x, y: y))
-            case "#":
-                let _ = 0
-               // walls.insert(Coord(x: x, y: y))
-            case ".":
-                let _ = 0
-                //spaces.insert(Coord(x: x, y: y))
-            default:
-                assertionFailure("extra map symbol: \(map[y][x])")
+            if let node = graph.node(atGridPosition: vector_int2(x: Int32(x), y: Int32(y))) as? MapNode {
+                node.symbol = map[y][x]
+
+                switch map[y][x] {
+                case "S":
+                    startPosition = node
+                    //    spaces.insert(Coord(x: x, y: y))
+                case "E":
+                    endPosition = node
+                    //   spaces.insert(Coord(x: x, y: y))
+                case "#":
+                    walls.append(node)
+                case ".":
+                    let _ = 0
+                    //spaces.insert(Coord(x: x, y: y))
+                default:
+                    assertionFailure("extra map symbol: \(map[y][x])")
+                }
             }
         }
     }
 
+    graph.remove(walls)
+
+
+
     // Part 1
+    guard let startPosition else {
+        print("no start position found!")
+        return
+    }
+    guard let endPosition else {
+        print("no end position found!")
+        return
+    }
 
-    var memoedResults: [Motion: Int] = [:]
-    currPosition = Motion(position: startPosition, facing: .East)
+    if let solution = graph.findPath(from: startPosition, to: endPosition) as? [MapNode] {
+        print("score? \(scoreRoute(solution))")
+    }
 
-    // The Reindeer start on the Start Tile (marked S) facing East and need to reach the End Tile (marked E). They can move forward one tile at a time (increasing their score by 1 point), but never into a wall (#). They can also rotate clockwise or counterclockwise 90 degrees at a time (increasing their score by 1000 points).
-
-    let score = runMaze(from: currPosition, seen: [startPosition], scoreSoFar: 0, pathSoFar: [currPosition.position])
-    print("final smallest score = \(score)")
+    // 11421 - too low (what)
 
 
-    func runMaze(from currentPos: Motion, seen: Set<Coord>, scoreSoFar: Int, pathSoFar: [Coord]) -> Int { // lowest score from the choice of directions
-
-        if currentPos.position == endPosition {
-       //     print("at the end! score: \(scoreSoFar) path: \(pathSoFar)")
-            return scoreSoFar // we're done!
-        }
-
-        if let result = memoedResults[currentPos] {
-        //    print("found result: \(result) for \(currentPos)")
-            return result
-        }
-
-        if pathSoFar.count > 10000 {
-            print("long path, bailing")
-            return -1
-        }
-        // check all 4 directions:
-        let west = currentPos.position.west()
-        let east = currentPos.position.east()
-        let north = currentPos.position.north()
-        let south = currentPos.position.south()
-        var westScore = scoreSoFar
-        var eastScore = scoreSoFar
-        var northScore = scoreSoFar
-        var southScore = scoreSoFar
-        var newSeen: Set<Coord> = seen
-        var newPos: Motion = currentPos
-        var newPath = pathSoFar
-        var scores: [Int] = []
-
-        // West
-        // handle facing change score increase
-        let westPossible = /*walls.contains(west) == false*/map[west.y][west.x] != "#" && seen.contains(west) == false
-        if westPossible {
-            newSeen = seen
-            let newPos = Motion(position: currentPos.position.west(), facing: .West)
-            switch (currentPos.facing) {
+    func scoreRoute(_ route: [MapNode]) -> Int {
+        var currPosition = Position(location: startPosition.gridPosition, facing: .East)
+        var totalScore = 0
+        for move in route {
+            let directionMoved: Direction
+            let currLocation = currPosition.location
+            if currLocation.x == move.gridPosition.x {
+                if currLocation.y < move.gridPosition.y {
+                    directionMoved = .South
+                } else {
+                    directionMoved = .North
+                }
+            } else {
+                if currLocation.x < move.gridPosition.x {
+                    directionMoved = .East
+                } else {
+                    directionMoved = .West
+                }
+            }
+            switch currPosition.facing {
             case .North:
-                // turn left, step forward
-                westScore += 1000 + 1
-            case .South:
-                // turn right, step forward
-                westScore += 1000 + 1
+                switch directionMoved {
+                case .North:
+                    // no OP! no turning needed
+                    let _ = 0
+                case .East, .West: // turn once
+                    totalScore += 1000
+                case .South: // turn twice
+                    totalScore += 2000
+                default:
+                    assertionFailure("no diagonals!")
+                }
             case .East:
-                // turn twice, then step forward
-                westScore += 1000 + 1000 + 1
-            case .West:
-                // step forward
-                westScore += 1
-            default:
-                let _ = 0 // we don't move diagonally
-            }
-
-            newPath.append(west)
-            newSeen.insert(west)
-            westScore = runMaze(from: newPos, seen: newSeen, scoreSoFar: westScore, pathSoFar: newPath)
-            if let memoedVal = memoedResults[newPos], westScore < memoedVal {
-                memoedResults[newPos] = westScore
-            }
-            if westScore != -1 {
-                scores.append(westScore)
-            }
-        }
-        // East
-        let eastPossible = /*walls.contains(east) == false*/map[east.y][east.x] != "#"  && seen.contains(east) == false
-        if eastPossible {
-            newSeen = seen
-            newPos = Motion(position: currentPos.position.east(), facing: .East)
-
-            switch (currentPos.facing) {
-            case .North:
-                // turn right, step forward
-                eastScore += 1000 + 1
+                switch directionMoved {
+                case .East:
+                    // no OP! no turning needed
+                    let _ = 0
+                case .North, .South: // turn once
+                    totalScore += 1000
+                case .West: // turn twice
+                    totalScore += 2000
+                default:
+                    assertionFailure("no diagonals!")
+                }
             case .South:
-                // turn left, step forward
-                eastScore += 1000 + 1
-            case .East:
-                //  step forward
-                eastScore += 1
+                switch directionMoved {
+                case .South:
+                    // no OP! no turning needed
+                    let _ = 0
+                case .East, .West: // turn once
+                    totalScore += 1000
+                case .North: // turn twice
+                    totalScore += 2000
+                default:
+                    assertionFailure("no diagonals!")
+                }
             case .West:
-                // turn twice, step fwd
-                eastScore += 1000 + 1000 + 1
+                switch directionMoved {
+                case .West:
+                    // no OP! no turning needed
+                    let _ = 0
+                case .North, .South: // turn once
+                    totalScore += 1000
+                case .East: // turn twice
+                    totalScore += 2000
+                default:
+                    assertionFailure("no diagonals!")
+                }
             default:
-                let _ = 0 // we don't move diagonally
+                assertionFailure("no diagonals!")
             }
-
-            newPath.append(east)
-            newSeen.insert(east)
-            eastScore = runMaze(from: newPos, seen: newSeen, scoreSoFar: eastScore, pathSoFar: newPath)
-            if let memoedVal = memoedResults[newPos], westScore < memoedVal {
-                memoedResults[newPos] = eastScore
-            }
-            if eastScore != -1 {
-                scores.append(eastScore)
-            }
-        }
-        // North
-        let northPossible = /*walls.contains(north) == false*/map[north.y][north.x] != "#"  && seen.contains(north) == false
-        if northPossible {
-            newSeen = seen
-            newPos = Motion(position: currentPos.position.north(), facing: .North)
-
-            switch (currentPos.facing) {
-            case .North:
-                // step forward
-                northScore += 1
-            case .South:
-                // turn twice, step forward
-                northScore += 1000 + 1000 + 1
-            case .East:
-                //  turn left, step forward
-                northScore += 1000 + 1
-            case .West:
-                // turn right, step fwd
-                northScore += 1000 + 1
-            default:
-                let _ = 0 // we don't move diagonally
-            }
-
-            newPath.append(north)
-            newSeen.insert(north)
-            northScore = runMaze(from: newPos, seen: newSeen, scoreSoFar: northScore, pathSoFar: newPath)
-            if let memoedVal = memoedResults[newPos], westScore < memoedVal {
-                memoedResults[newPos] = northScore
-            }
-            if northScore != -1 {
-                scores.append(northScore)
-            }
+            // movement cost
+            totalScore += 1
         }
 
-        // South
-        let southPossible = /*walls.contains(south) == false*/ map[south.y][south.x] != "#"  && seen.contains(south) == false
-        if southPossible {
-            newSeen = seen
-            newPos = Motion(position: currentPos.position.south(), facing: .South)
+        return totalScore
+    }
 
-            switch (currentPos.facing) {
-            case .North:
-                // turn twice, step forward
-                southScore += 1000 + 1000 + 1
-            case .South:
-                // turn twice, step forward
-                southScore += 1
-            case .East:
-                //  turn right, step forward
-                southScore += 1000 + 1
-            case .West:
-                // turn left, step fwd
-                southScore += 1000 + 1
-            default:
-                let _ = 0 // we don't move diagonally
-            }
+    class MapNode: GKGridGraphNode {
+        var symbol: String = ""
 
-            newPath.append(south)
-            newSeen.insert(south)
-            southScore = runMaze(from: newPos, seen: newSeen, scoreSoFar: southScore, pathSoFar: newPath)
-            if let memoedVal = memoedResults[newPos], westScore < memoedVal {
-                memoedResults[newPos] = southScore
-            }
-            if southScore != -1 {
-                scores.append(southScore)
-            }
+        override func cost(to node: GKGraphNode) -> Float {
+            // HERE'S THE PROBLEM... you can't set this up because it varies based on what the character's facing is at the time, and I can't adjust hte costs on the fly while the solver is solvering.
+            return super .cost(to: node)
         }
+    }
 
-        scores.sort(by: <)
-        if scores.isEmpty == false {
-            return scores[0]
-        } else {
-            return -1 // dead end marker. no winning from this point!
-        }
+    struct Position {
+        let location: vector_int2
+        let facing: Direction
     }
 }
