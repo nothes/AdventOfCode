@@ -129,9 +129,12 @@ func day17() {
                     return ""
                 }
             }
-            let tempOutput = outputBuffer.reduce("", { partialResult, next in
+            var tempOutput = outputBuffer.reduce("", { partialResult, next in
                 return partialResult.appending("\(next),")
             })
+            if !tempOutput.isEmpty {
+                tempOutput.removeLast()
+            }
             if !programString.hasPrefix(tempOutput) {
                 return ""
             }
