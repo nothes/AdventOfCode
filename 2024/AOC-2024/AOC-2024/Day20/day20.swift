@@ -70,84 +70,87 @@ func day20() {
     let baseDistance = basePath.count - 1 // because it's got the start position in there.
     
     print("base distance = \(baseDistance)")
-//    let filteredWalls = walls.filter { node in
+    // part 1 - much smarter!
+
+//    var answer = 0
+//    for node in walls {
 //        let nodeXPos = node.gridPosition.x
 //        let nodeYPos = node.gridPosition.y
 //        // in order to be able to pass through the walls safely they need to be only 1 thick, so we can discard any wall that leads to the edge of the map or doesn't open up again in 1 move
-//        if let down = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos + 1)), let up = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos - 1)), let left = graph.node(atGridPosition: vector_int2(x: nodeXPos - 1, y: nodeYPos)), let right = graph.node(atGridPosition: vector_int2(x: nodeXPos + 1, y: nodeYPos)) {
+//        let up = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos - 1))
+//        let down = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos + 1))
+//        let left = graph.node(atGridPosition: vector_int2(x: nodeXPos - 1, y: nodeYPos))
+//        let right = graph.node(atGridPosition: vector_int2(x: nodeXPos + 1, y: nodeYPos))
+//        if let up, let down {
 //            let upChar = map[Int(down.gridPosition.y)][Int(down.gridPosition.x)]
 //            let downChar = map[Int(up.gridPosition.y)][Int(up.gridPosition.x)]
-//            let leftChar = map[Int(left.gridPosition.y)][Int(left.gridPosition.x)]
-//            let rightChar = map[Int(right.gridPosition.y)][Int(right.gridPosition.x)]
-//            if (upChar != "." && downChar != ".") || (leftChar != "." && rightChar != ".") {
-//                return false
+//            if upChar == "." && downChar == "." {
+//                if let upIndex = basePath.firstIndex(of: up), let downIndex = basePath.firstIndex(of: down) {
+//                    let skipDistance = abs(downIndex - upIndex)
+//                    if skipDistance > 100 {
+//                        answer += 1
+//                    }
+//                }
 //            }
 //        }
-//        return true
+//
+//        if let left, let right {
+//            let leftChar = map[Int(left.gridPosition.y)][Int(left.gridPosition.x)]
+//            let rightChar = map[Int(right.gridPosition.y)][Int(right.gridPosition.x)]
+//            if leftChar == "." && rightChar == "." {
+//                if let leftIndex = basePath.firstIndex(of: left), let rightIndex = basePath.firstIndex(of: right) {
+//                    let skipDistance = abs(leftIndex - rightIndex)
+//                    if skipDistance > 100 {
+//                        answer += 1
+//                    }
+//                }
+//            }
+//
+//        }
 //    }
-    
-    // thisis hte brute force way, instead we should just make the path & "remove" the nodes between the cut-over, and re-count.
-    // part 1, pass one - this works, but almost 7 mins to execute.
-    //
-    //    var answerCount = 0
-    //    for wall in filteredWalls {
-    //        // update the graph, see if the solution is better
-    //        graph.add([wall])
-    //        graph.connectToAdjacentNodes(node: wall)
-    //        let cheatDistance = graph.findPath(from: startLoc, to: endLoc).count - 1
-    //
-    //        //print("removing wall at \(wall.gridPosition), path is \(cheatDistance.count - 1), for a delta of \(baseDistance - cheatDistance)")
-    //
-    //        if baseDistance - cheatDistance >= 100 {
-    //            answerCount += 1
-    //        }
-    //        graph.remove([wall])
-    //    }
-    
-    //    print(answerCount) //my answer was 1369
-    
-    // part 1 - much smarter!
+//
+//    print("part 1: \(answer)")
 
-    var answer = 0
-    for node in walls {
-        let nodeXPos = node.gridPosition.x
-        let nodeYPos = node.gridPosition.y
-        // in order to be able to pass through the walls safely they need to be only 1 thick, so we can discard any wall that leads to the edge of the map or doesn't open up again in 1 move
-        let up = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos - 1))
-        let down = graph.node(atGridPosition: vector_int2(x: nodeXPos, y: nodeYPos + 1))
-        let left = graph.node(atGridPosition: vector_int2(x: nodeXPos - 1, y: nodeYPos))
-        let right = graph.node(atGridPosition: vector_int2(x: nodeXPos + 1, y: nodeYPos))
-        var verticalPassthrough = false
-        var horizontalPassthrough = false
-        if let up, let down {
-            let upChar = map[Int(down.gridPosition.y)][Int(down.gridPosition.x)]
-            let downChar = map[Int(up.gridPosition.y)][Int(up.gridPosition.x)]
-            if upChar == "." && downChar == "." {
-                if let upIndex = basePath.firstIndex(of: up), let downIndex = basePath.firstIndex(of: down) {
-                    let skipDistance = abs(downIndex - upIndex)
-                    if skipDistance > 100 {
-                        answer += 1
+
+    // part 2
+    // the cheat is now more than just "removing 1 wall", it's "teleport anywhere 20 squares away", which very greatly complicates the issue. HRM.
+
+    // for every step along the path we take. what is the furthest along point in the path we can reach with 20 distance.
+    // we should be going through our path from the end when determining the "20 squares away" part, because of U-bends & such. we want to skip as much as possible
+    var pt2Answer = 0
+    var answerDict: [Int: Int] = [:] // key is time saved, value is count of cheats that do it
+    for pathNode in basePath { // iterates forward
+        // work backwards to see where the furthest we can get to is.
+        for potentialCheatNode in basePath.reversed() {
+            let xDistance = Int(abs(pathNode.gridPosition.x - potentialCheatNode.gridPosition.x))
+            let yDistance = Int(abs(pathNode.gridPosition.y - potentialCheatNode.gridPosition.y))
+            if xDistance + yDistance <= 20 { // this may need to be 19?
+                // this is a viable cheat
+//                print("start: (\(pathNode.gridPosition.x), \(pathNode.gridPosition.y))")
+//                print("end: (\(potentialCheatNode.gridPosition.x), \(potentialCheatNode.gridPosition.y))")
+//                print("startIndex: \(String(describing: basePath.firstIndex(of: pathNode)))")
+//                print("endIndex: \(String(describing: basePath.firstIndex(of: potentialCheatNode)))")
+                if let leftIndex = basePath.firstIndex(of: pathNode), let rightIndex = basePath.firstIndex(of: potentialCheatNode) {
+                    // crow flies distance
+//                    print("cheat travel distance = \(xDistance + yDistance)")
+                    let travelDistance = rightIndex - leftIndex
+                    let skipDistance = travelDistance - (xDistance + yDistance)
+//                    print("skipDistance = \(skipDistance)")
+                    answerDict[skipDistance] = 1 + (answerDict[skipDistance] ?? 0)
+                    if skipDistance >= 100 {
+                        pt2Answer += 1
+//                        break
                     }
                 }
             }
-        }
-
-        if let left, let right {
-            let leftChar = map[Int(left.gridPosition.y)][Int(left.gridPosition.x)]
-            let rightChar = map[Int(right.gridPosition.y)][Int(right.gridPosition.x)]
-            if leftChar == "." && rightChar == "." {
-                if let leftIndex = basePath.firstIndex(of: left), let rightIndex = basePath.firstIndex(of: right) {
-                    let skipDistance = abs(leftIndex - rightIndex)
-                    if skipDistance > 100 {
-                        answer += 1
-                    }
-                }
-            }
-
         }
     }
-
-    print(answer)
+    print(answerDict.sorted(by: { left, right in
+        left.key < right.key
+    }).filter({ input in
+        input.key >= 100
+    }))
+    print("part 2 answer: \(pt2Answer)") //9408 too low //9412 too low // 9414 too low
 
 
     // for radar later - the error here was BAFFLINGLY wrong.
@@ -163,9 +166,4 @@ func day20() {
 //        return true
 //    }
 
-}
-
-struct Cheat {
-    let start: Coord
-    let end: Coord
 }
