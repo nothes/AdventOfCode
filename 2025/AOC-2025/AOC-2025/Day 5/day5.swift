@@ -46,6 +46,10 @@ func part1(ingredients: [Int], freshRanges: [(Int, Int)]) {
 func part2(rangeSet: RangeSet<Int>) {
     var newSet = RangeSet<Int>()
     let ranges = rangeSet.ranges
+
+    print(rangeSet)
+    print(rangeSet.ranges)
+
     for range in ranges {
         var practicalRange = range
         if newSet.isEmpty {
