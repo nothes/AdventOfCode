@@ -11,7 +11,7 @@ func day7() {
     let input = readInput(forDay: 7)
     
     let lines = input.split(separator: "\n", omittingEmptySubsequences: false)
-    var problems: [[String]] = []
+//    var problems: [[String]] = []
     var charGrid: [[String]] = []
     var startCoord: (Int, Int) = (0, 0)
     var x = 0
